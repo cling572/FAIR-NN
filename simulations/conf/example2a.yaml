@@ -1,0 +1,69 @@
+# DWES simulation preset: Example 2, Case 2a
+# (factor + sparse idiosyncratic heterogeneity, linear).
+#   Y = m_1(f, u_J) + sigma_1(f, u_J) * eta,  X = B f + u,  J = {1,...,8}
+#
+# Run:
+#   python run_from_config.py train conf/example2a.yaml
+
+# ---- Grid, methods, output ----
+p_values: [500, 1000, 1500, 2000]
+taus: [0.05, 0.10, 0.20]
+methods: [RLR, KRR, FA-NN, FAIR-NN]
+output: results_example2a.csv
+
+# ---- Data-generating design (Example 2, Case 2a) ----
+design: linear
+factor_model: true
+heterogeneity: linear
+innovation: normal
+
+# ---- Sparse idiosyncratic heterogeneity ----
+heterogeneity_distribution: normal
+heterogeneity_location_strength: 0.5
+heterogeneity_scale_strength: 0.25
+
+# ---- Sample sizes and factor projection (paper settings) ----
+n_train: 2000
+n_test: 1000
+n_unlabeled: 200
+p: 500
+r: 8
+r_bar: 16
+tau: 0.10
+
+# ---- Training controls (depth 3, width 64) ----
+epochs: 200
+repeats: 100
+batch_size: 256
+learning_rate: 0.0001
+seed: 2026
+device: cpu
+
+# ---- Sparse throughput ----
+throughput_dim: 8
+truncation: 3.0
+penalty_eps: 0.005
+lambda_q: null
+
+# ---- Quantile loss ----
+quantile_loss: pinball
+quantile_huber_kappa: 0.1
+
+# ---- KRR ----
+krr_kernel: gaussian
+
+# ---- RLR (internal HDES) ----
+hdes_lambda_q: null
+hdes_lambda_e: null
+hdes_learning_rate: null
+hdes_epochs: null
+
+# ---- Weighted ES stabilization ----
+c_h: null
+c_h_quantile: 0.05
+
+# ---- Bootstrap CI (off for MSPE tables) ----
+bootstrap_B: 0
+ci_level: 0.95
+save_bootstrap_ci: false
+bootstrap_ci_output_dir: bootstrap_ci

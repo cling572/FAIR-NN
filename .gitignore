@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data (not distributed; regenerate with the build/audit scripts)
+experiments/tecator/data/*
+experiments/tecator/raw/*
+experiments/nhanes/data/*
+!**/data/.gitkeep
+!**/raw/.gitkeep
+
+# Results and figures (regenerate by running the experiments)
+**/results/
+**/results1/
+**/figures/
+**/figure1/
+**/bootstrap_ci/
+simulations/results_*.csv
+simulations/results_from_config.csv
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Debug artifacts
+**/.dbg/
+*.ndjson

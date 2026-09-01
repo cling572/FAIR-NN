@@ -1,0 +1,57 @@
+# Tecator upper-tail conditional fat ES experiment.
+#
+# Run the preflight audit:
+#   python3 run_experiment.py audit
+#
+# Run all report tables:
+#   python3 run_experiment.py train
+
+data_path: data/tecator_fair_nn_213.csv
+output_dir: results/fair_nn_upper_tail
+
+# The four methods reported in the FAIR-NN empirical comparison.
+methods: [RLR, KRR, FA-NN, FAIR-NN]
+taus: [0.70, 0.80, 0.90]
+
+# The official interpolation split after removing samples 103 and 105:
+# C (127) plus M (43) train the models; T (43) is the held-out test set.
+train_partitions: [C, M]
+test_partitions: [T]
+train_size: 170
+test_size: 43
+seed: 20260819
+
+# There is no separate monitoring set in this design. These prespecified,
+# singleton values prevent any tuning on the held-out T test set.
+factor_dims: [4]
+throughput_dims: [4]
+lambda_gamma_candidates: [null]
+
+# Compact networks are appropriate for n_train=170 and p=100.
+epochs: 250
+rlr_epochs: 300
+hidden_dim: 32
+hidden_layers: 2
+batch_size: 32
+learning_rate: 0.001
+
+truncation: 3.0
+gamma_penalty_eps: 0.005
+lasso_lambda: null
+krr_alpha: 1.0
+# Matches the NHANES runner. auto writes one KRR row for each of rbf,
+# gaussian, and polynomial. Set krr_kernel_candidates to a nonempty list to
+# override krr_kernel, for example [gaussian, linear].
+krr_kernel: auto
+krr_kernel_candidates: []
+krr_gamma: auto
+krr_degree: 3
+krr_coef0: 1.0
+
+# Adaptive inverse-variance weighting in FAIR-NN.
+c_h: null
+c_h_quantile: 0.05
+c_h_scale: 0.50
+
+response_standardize: true
+device: auto

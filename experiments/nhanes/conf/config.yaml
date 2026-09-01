@@ -1,0 +1,103 @@
+# NHANES serum-cotinine upper-tail ES rerun.
+#
+# From this directory:
+#   python3 run_from_config.py audit conf/config.yaml
+#   python3 run_from_config.py train conf/config.yaml
+#
+# The audit command creates the stratified split manifest and validates the
+# baseline cohort. The train command uses that exact split and writes model
+# predictions, group metrics, tuning records, and FAIR-NN throughput rankings.
+
+# ---------------------------------------------------------------------------
+# Audited data inputs and baseline cohort
+# ---------------------------------------------------------------------------
+
+data_path: data/design_matrix_new.csv
+audit_path: data/data_audit.csv
+output_dir: results/baseline_upper_tail
+
+target_col: cotinine
+# Standardize cotinine with training-sample moments inside model fitting.
+# Test metrics, predictions, and summaries are restored to ng/mL.
+response_standardize: true
+excluded_race_indicator: raceNA
+
+# The source field raceM is the confirmed Hispanic indicator. White is the
+# baseline category after raceNA is removed.
+group_columns: [raceA, raceB, raceM]
+group_names: [Asian, Black, Hispanic]
+white_group_name: White
+
+# Set to all for the original pooled analysis. Set to Asian, Black, Hispanic,
+# or White to estimate that group separately; group-constant predictors are
+# removed automatically and outputs are saved in a group-specific subdirectory.
+analysis_group: all
+
+# ---------------------------------------------------------------------------
+# Methods, tail target, and stratified split
+# ---------------------------------------------------------------------------
+
+methods: [RLR, KRR, FA-NN, FAIR-NN]
+tau: 0.90
+tau_values: [0.70, 0.80, 0.90]
+
+train_fraction: 0.70
+validation_fraction: 0.15
+test_fraction: 0.15
+seed: 2026
+
+# ---------------------------------------------------------------------------
+# Factor / sparse-throughput tuning
+# ---------------------------------------------------------------------------
+
+# PCA is estimated only on the 24 audited quantitative predictors and only
+# using the training split. The 449 binary/dummy predictors are never passed
+# to PCA; they remain available to FAIR-NN's sparse throughput.
+factor_dim_candidates: [4, 8]
+
+# throughput_dim fixes the sparse-throughput dimension N. Set it to null to
+# tune over throughput_dim_candidates instead.
+throughput_dim: null
+throughput_dim_candidates: [4, 8]
+lambda_gamma_candidates: [null]
+tuning_epochs: 100
+
+truncation: 3.0
+gamma_penalty_eps: 0.005
+selected_top_k: 30
+
+# ---------------------------------------------------------------------------
+# Neural / baseline fitting controls
+# ---------------------------------------------------------------------------
+
+hidden_dim: 64
+hidden_layers: 2
+epochs: 350
+hdes_epochs: 500
+batch_size: 64
+learning_rate: 0.001
+
+# If null, RLR uses sqrt(log(p) / n_train).
+lasso_lambda: null
+
+# KRR kernels, aligned with the reference simulation_methods.py.
+# auto tries rbf, gaussian, then polynomial. If krr_kernel_candidates is empty,
+# krr_kernel is used; otherwise each listed candidate is run and reported.
+krr_alpha: 1.0
+krr_kernel: auto
+krr_kernel_candidates: []
+krr_gamma: auto
+krr_degree: 3
+krr_coef0: 1.0
+
+# Adaptive residual-variance weights for FAIR-NN.
+c_h: null
+c_h_quantile: 0.10
+c_h_scale: 0.50
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+
+plot: true
+device: auto
